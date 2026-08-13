@@ -1,0 +1,83 @@
+{
+  "name": "Raman Pinate",
+  "location": {
+    "primary": "Mumbai",
+    "remote": true,
+    "willing_to_relocate": true
+  },
+  "experience": {
+    "level": "fresher",
+    "years": 0,
+    "notice_period": "immediate"
+  },
+  "job_types": [
+    "full-time",
+    "internship",
+    "contract"
+  ],
+  "target_roles": [
+    "Data Analyst",
+    "Junior Data Analyst",
+    "Business Intelligence Analyst",
+    "BI Analyst",
+    "Product Data Analyst",
+    "Data & Analytics",
+    "Business Data Analyst",
+    "SQL Analyst",
+    "Reporting Analyst",
+    "Analytics Engineer"
+  ],
+  "skills": [
+    "SQL",
+    "MySQL",
+    "Power BI",
+    "Tableau",
+    "Python",
+    "Microsoft Excel",
+    "Data Analysis",
+    "Data Visualization",
+    "ETL",
+    "Data Cleaning",
+    "Data Modeling",
+    "Business Intelligence",
+    "Dashboard Development",
+    "DAX",
+    "Power Query",
+    "KPI Reporting"
+  ],
+  "keywords": {
+    "primary": [
+      "Data Analyst",
+      "Junior Data Analyst",
+      "Business Intelligence Analyst",
+      "BI Analyst",
+      "Reporting Analyst",
+      "Business Data Analyst",
+      "Product Data Analyst",
+      "Data Analytics",
+      "Analytics Analyst"
+    ],
+    "sql_bi": [
+      "SQL Analyst",
+      "Power BI Analyst",
+      "Tableau Analyst",
+      "BI Developer",
+      "Business Intelligence",
+      "Reporting & Analytics",
+      "Data Visualization Analyst"
+    ],
+    "startup": [
+      "Data & Analytics",
+      "Analytics",
+      "Business Analytics",
+      "Product Analytics",
+      "Growth Analytics",
+      "Operations Analytics",
+      "Revenue Analytics"
+    ]
+  },
+  "compensation": {
+    "minimum_ctc": null,
+    "target_ctc": null
+  }
+}
