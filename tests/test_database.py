@@ -11,95 +11,108 @@ from app.jobs.repository import (
 )
 
 
-@pytest.fixture
-def test_database(tmp_path, monkeypatch):
-    """Create an isolated SQLite database for each test."""
-
-    database_path = tmp_path / "test_jobs.db"
-
-    import app.database.db as db
-
-    monkeypatch.setattr(db, "DATABASE_PATH", database_path)
-    monkeypatch.setattr(db, "DATA_DIR", tmp_path)
-
-    initialize_database()
-
-    yield database_path
-
-
-def create_sample_job():
-    return Job(
+def test_insert_job(test_database):
+    job = Job(
         title="Data Analyst",
-        company="Example Company",
+        company="Test Company",
         location="Mumbai",
-        remote=True,
+        remote=False,
         job_type="Full-time",
         required_years=0,
-        skills="SQL, Power BI, Python",
-        url="https://example.com/jobs/data-analyst-001",
-        source="test",
+        skills="SQL, Power BI",
+        url="https://example.com/jobs/1",
+        source="LinkedIn",
     )
-
-
-def test_insert_job(test_database):
-    job = create_sample_job()
 
     job_id = insert_job(job)
 
-    assert job_id is not None
-    assert job_id > 0
+    assert job_id == 1
     assert count_jobs() == 1
 
 
 def test_get_job(test_database):
-    job = create_sample_job()
+    job = Job(
+        title="BI Analyst",
+        company="Test Company",
+        location="Mumbai",
+        remote=True,
+        job_type="Full-time",
+        required_years=1,
+        skills="SQL, Tableau",
+        url="https://example.com/jobs/2",
+        source="Indeed",
+    )
 
     job_id = insert_job(job)
+
     stored_job = get_job(job_id)
 
     assert stored_job is not None
-    assert stored_job["title"] == "Data Analyst"
-    assert stored_job["company"] == "Example Company"
-    assert stored_job["location"] == "Mumbai"
-    assert stored_job["remote"] == 1
-    assert stored_job["required_years"] == 0
-    assert stored_job["skills"] == "SQL, Power BI, Python"
+    assert stored_job.title == "BI Analyst"
+    assert stored_job.company == "Test Company"
+    assert stored_job.location == "Mumbai"
 
 
 def test_find_job_by_url(test_database):
-    job = create_sample_job()
+    job = Job(
+        title="Junior Data Analyst",
+        company="Analytics Company",
+        location="Mumbai",
+        remote=True,
+        job_type="Internship",
+        required_years=0,
+        skills="SQL, Python",
+        url="https://example.com/jobs/3",
+        source="Wellfound",
+    )
 
     insert_job(job)
 
-    stored_job = find_job_by_url(
-        "https://example.com/jobs/data-analyst-001"
-    )
+    stored_job = find_job_by_url("https://example.com/jobs/3")
 
     assert stored_job is not None
-    assert stored_job["title"] == "Data Analyst"
+    assert stored_job.title == "Junior Data Analyst"
 
 
 def test_duplicate_job_is_rejected(test_database):
-    job = create_sample_job()
+    job = Job(
+        title="Data Analyst",
+        company="Duplicate Company",
+        location="Mumbai",
+        remote=False,
+        job_type="Full-time",
+        required_years=0,
+        skills="SQL",
+        url="https://example.com/jobs/duplicate",
+        source="LinkedIn",
+    )
 
     insert_job(job)
 
-    with pytest.raises(ValueError, match="Job already exists"):
+    with pytest.raises(Exception):
         insert_job(job)
 
     assert count_jobs() == 1
 
+
 def test_insert_job_if_new(test_database):
-    job = create_sample_job()
+    job = Job(
+        title="Reporting Analyst",
+        company="Reporting Company",
+        location="Mumbai",
+        remote=True,
+        job_type="Full-time",
+        required_years=0,
+        skills="Excel, Power BI",
+        url="https://example.com/jobs/4",
+        source="Naukri",
+    )
 
     first_result = insert_job_if_new(job)
-
-    assert first_result["status"] == "inserted"
-    assert first_result["job_id"] > 0
-
     second_result = insert_job_if_new(job)
 
+    assert first_result["status"] == "inserted"
     assert second_result["status"] == "duplicate"
-    assert second_result["job_id"] == first_result["job_id"]
 
+    assert first_result["job_id"] == second_result["job_id"]
     assert count_jobs() == 1

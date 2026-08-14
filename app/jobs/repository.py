@@ -91,8 +91,33 @@ def insert_job(job: Job) -> int:
 
         raise
 
+def _row_to_job(row: sqlite3.Row) -> Job:
+    """Convert a SQLite row into a Job model."""
+    return Job(
+        title=row["title"],
+        company=row["company"],
+        location=row["location"],
+        remote=bool(row["remote"]),
+        job_type=row["job_type"],
+        salary_min=row["salary_min"],
+        salary_max=row["salary_max"],
+        currency=row["currency"],
+        required_years=row["required_years"],
+        seniority=row["seniority"],
+        skills=row["skills"],
+        description=row["description"],
+        url=row["url"],
+        source=row["source"],
+        date_posted=row["date_posted"],
+        date_discovered=row["date_discovered"],
+        match_score=row["match_score"],
+        decision=row["decision"],
+        application_status=row["application_status"],
+        applied_at=row["applied_at"],
+    )
 
-def get_job(job_id: int) -> Optional[dict]:
+
+def get_job(job_id: int) -> Optional[Job]:
     """Retrieve a job by ID."""
 
     with get_connection() as connection:
@@ -104,7 +129,7 @@ def get_job(job_id: int) -> Optional[dict]:
     if row is None:
         return None
 
-    return dict(row)
+    return _row_to_job(row)
 
 
 def count_jobs() -> int:
@@ -118,7 +143,7 @@ def count_jobs() -> int:
     return row["count"]
 
 
-def find_job_by_url(url: str) -> Optional[dict]:
+def find_job_by_url(url: str) -> Optional[Job]:
     """Find a job using its URL."""
 
     with get_connection() as connection:
@@ -130,7 +155,7 @@ def find_job_by_url(url: str) -> Optional[dict]:
     if row is None:
         return None
 
-    return dict(row)
+    return _row_to_job(row)
 
 
 def insert_job_if_new(job: Job) -> dict:
@@ -140,13 +165,18 @@ def insert_job_if_new(job: Job) -> dict:
         A dictionary containing the operation result and job ID.
     """
 
-    existing_job = find_job_by_url(job.url) if job.url else None
+    if job.url:
+        with get_connection() as connection:
+            row = connection.execute(
+                "SELECT id FROM jobs WHERE url = ?",
+                (job.url,),
+            ).fetchone()
 
-    if existing_job is not None:
-        return {
-            "status": "duplicate",
-            "job_id": existing_job["id"],
-        }
+        if row is not None:
+            return {
+                "status": "duplicate",
+                "job_id": row["id"],
+            }
 
     job_id = insert_job(job)
 
