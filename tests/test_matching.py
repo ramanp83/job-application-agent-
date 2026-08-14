@@ -98,3 +98,22 @@ def test_unrelated_role_should_be_skipped():
     result = calculate_match(job, profile)
 
     assert result["decision"] == "SKIP"
+
+def test_missing_location_does_not_crash():
+    profile = load_profile()
+
+    job = {
+        "title": "Data Analyst",
+        "location": None,
+        "job_type": "Full-time",
+        "required_years": 0,
+        "skills": [
+            "SQL",
+            "Power BI",
+        ],
+    }
+
+    result = calculate_match(job, profile)
+
+    assert isinstance(result["score"], int)
+    assert result["decision"] in {"APPLY", "REVIEW", "SKIP"}

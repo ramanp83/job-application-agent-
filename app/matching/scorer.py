@@ -22,8 +22,11 @@ from .rules import (
 )
 
 
-def normalize(value: str) -> str:
+def normalize(value: str | None) -> str:
     """Normalize text for comparison."""
+    if value is None:
+        return ""
+
     return value.strip().lower()
 
 
