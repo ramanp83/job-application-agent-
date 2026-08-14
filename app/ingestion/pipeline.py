@@ -1,25 +1,43 @@
 """
 Job ingestion pipeline.
 
-Connects a job source to normalization and database persistence.
+Connects a job source to normalization, matching,
+and database persistence.
 """
 
+import json
+from pathlib import Path
 from typing import Any
 
 from app.jobs.models import Job
 from app.jobs.normalizer import normalize_job
 from app.jobs.repository import insert_job_if_new
+from app.matching.scorer import calculate_match
 
 from .base import JobSource
 
 
+PROFILE_PATH = Path("app/config/profile.json")
+
+
+def load_profile() -> dict[str, Any]:
+    """Load the candidate profile used for job matching."""
+
+    with PROFILE_PATH.open("r", encoding="utf-8") as file:
+        return json.load(file)
+
+
 def run_ingestion(source: JobSource) -> dict[str, Any]:
     """
-    Fetch jobs from a source, normalize them, and persist new jobs.
+    Fetch jobs from a source, normalize them, match them
+    against the candidate profile, and persist new jobs.
 
     Returns:
-        Summary containing fetched, inserted, duplicate, and failed counts.
+        Summary containing fetched, inserted, duplicate,
+        and failed counts.
     """
+
+    profile = load_profile()
 
     fetched = 0
     inserted = 0
@@ -32,7 +50,17 @@ def run_ingestion(source: JobSource) -> dict[str, Any]:
         try:
             normalized = normalize_job(raw_job)
 
-            normalized["skills"] = ", ".join(normalized["skills"])
+            match_result = calculate_match(
+                normalized,
+                profile,
+            )
+
+            normalized["skills"] = ", ".join(
+                normalized["skills"]
+            )
+
+            normalized["match_score"] = match_result["score"]
+            normalized["decision"] = match_result["decision"]
 
             job = Job(**normalized)
 
@@ -40,6 +68,7 @@ def run_ingestion(source: JobSource) -> dict[str, Any]:
 
             if result["status"] == "inserted":
                 inserted += 1
+
             elif result["status"] == "duplicate":
                 duplicates += 1
 

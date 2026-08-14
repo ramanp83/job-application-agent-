@@ -1,5 +1,6 @@
-from app.ingestion.mock_source import MockJobSource
 from app.ingestion.pipeline import run_ingestion
+from app.ingestion.mock_source import MockJobSource
+from app.jobs.repository import find_job_by_url
 
 
 def test_mock_source_returns_jobs():
@@ -72,3 +73,18 @@ def test_ingestion_pipeline_stores_normalized_jobs(test_database):
     assert job is not None
     assert job.title == "Data Analyst"
     assert job.remote is True
+
+def test_ingestion_stores_match_score_and_decision(test_database):
+    source = MockJobSource()
+
+    result = run_ingestion(source)
+
+    assert result["inserted"] == 3
+
+    job = find_job_by_url(
+        "https://example.com/jobs/data-analyst-001"
+    )
+
+    assert job is not None
+    assert job.match_score is not None
+    assert job.decision == "APPLY"
